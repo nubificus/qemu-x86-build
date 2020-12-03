@@ -28,8 +28,10 @@ RUN mkdir /lib/modules-load.d && \
 	echo "virtio_accel" > /lib/modules-load.d/virtio_accel.conf
 RUN sed s/root\:x\:/root\:\:/ -i /etc/passwd && \
 	sed s/root\:\*\:/root\:\:/ -i /etc/shadow && \
-	apt-get update && apt-get -y install init udev kmod && \
+	apt-get update && apt-get -y install init udev kmod \
+		isc-dhcp-client ifupdown iproute2 && \
 	apt-get clean
+COPY interfaces.d /etc/network/interfaces.d
 
 # build classify example
 FROM rootfs-builder as virtio-examples-builder
