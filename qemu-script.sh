@@ -31,4 +31,4 @@ TERM=linux qemu-system-x86_64 \
 	-netdev type=tap,id=net0 -device virtio-net,netdev=net0 \
 	-object acceldev-backend-crypto,id=crypto0 \
 	-object acceldev-backend-generic,id=gen0 \
-	-device virtio-accel,id=accel0,crypto=crypto0,generic=gen0
+	-device virtio-accel-pci,id=accel0,crypto=crypto0,generic=gen0
