@@ -24,14 +24,15 @@ RUN make modules modules_install KDIR=/linux INSTALL_MOD_PATH=/modules
 
 FROM ubuntu:latest as rootfs-builder
 COPY --from=virtio-builder /modules/* /lib/
-RUN mkdir /lib/modules-load.d && \
-	echo "virtio_accel" > /lib/modules-load.d/virtio_accel.conf
+RUN apt-get update && apt-get -y install init udev kmod \
+	isc-dhcp-client ifupdown iproute2 iputils-ping gcc-7 && \
+	apt-get clean
 RUN sed s/root\:x\:/root\:\:/ -i /etc/passwd && \
 	sed s/root\:\*\:/root\:\:/ -i /etc/shadow && \
-	apt-get update && apt-get -y install init udev kmod \
-		isc-dhcp-client ifupdown iproute2 iputils-ping gcc-7 && \
-	apt-get clean
+	mkdir /root/data && \
+	echo "data  /root/data  9p  trans=virtio,posixacl,_netdev  0  0" > /etc/fstab
 COPY interfaces.d /etc/network/interfaces.d
+RUN echo "virtio_accel" > /lib/modules-load.d/virtio_accel.conf
 
 # build classify example
 FROM rootfs-builder as virtio-examples-builder
@@ -51,5 +52,6 @@ COPY /create_rootfs.sh /
 COPY --from=linux-builder /linux/arch/x86/boot/bzImage /
 COPY --from=linux-builder /linux/vmlinux /
 COPY --from=rootfs-builder / /rootfs
+COPY --from=rootfs-builder /root/data /data
+COPY /dog_0.jpg	/data/
 COPY --from=virtio-examples-builder /usr/local /rootfs/usr/local
-COPY /dog_0.jpg	/rootfs/root/

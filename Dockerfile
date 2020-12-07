@@ -14,23 +14,25 @@ RUN apt-get update && \
 		zlib1g-dev \
 		pkg-config \
 		iproute2 \
+		libcap-ng-dev \
+		libattr1-dev \
 		$(apt-get -s build-dep qemu | egrep ^Inst | fgrep '[all]' | cut -d\  -f2) \
 	&& rm -rf /var/lib/apt/lists/*
 
 ARG TOKEN
 # Build & install vaccel-runtime
-RUN git clone https://papazof:${TOKEN}@github.com/cloudkernels/vaccel-runtime.git && \
-	cd vaccel-runtime && git checkout timers-wip && \
+RUN git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/vaccel-runtime.git \
+	-b timers-wip && cd vaccel-runtime && \
 	make DISABLE_OPENCL=1 CUDAML_DIR="/usr/local" && \
 	cp libvaccel_runtime.so /usr/local/lib/ && \
 	cp vaccel_runtime.h /usr/local/include && \
 	cd .. && rm -rf vaccel-runtime
 	
 # Build & install QEMU w/ vAccel backend
-RUN git clone https://papazof:${TOKEN}@github.com/cloudkernels/qemu-vaccel.git && \
-	cd qemu-vaccel && git checkout update-to-v5 && \
+RUN git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/qemu-vaccel.git \
+	-b update-to-v5 && cd qemu-vaccel && \
 	git submodule update --init && \
-	./configure --target-list=x86_64-softmmu && \
+	./configure --target-list=x86_64-softmmu --enable-virtfs && \
 	make -j$(nproc) && make install && \
 	cd .. && rm -rf qemu-vaccel
 

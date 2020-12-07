@@ -4,7 +4,7 @@ This repo contains the Dockerfiles & scripts to produce a vAccel-enabled QEMU gu
 
 ### building guest kernel & rootfs
 
-To generate the necessary binaries to run a QEMU guest, use:
+To generate the necessary binaries and directories to run a QEMU guest, use:
 
 ```
 bash build_guest.sh
@@ -26,4 +26,12 @@ To execute the vAccel QEMU guest, use:
 ```
 bash run.sh
 ```
+
+You can then run an image classification example with:
+```
+classify <image_path> <iterations>
+```
+
+You can use the `guest/qemu-guest-{arch}/data` directory (created by the `build_guest.sh` script) to share data between the host and the guest at runtime. The directory is mounted at `/root/data` (via 9p) inside the QEMU guest.
+
 Please note you have to setup nvidia-docker beforehand, in order to use the GPU from the container. Further instructions are provided here: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker

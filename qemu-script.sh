@@ -29,6 +29,8 @@ TERM=linux qemu-system-x86_64 \
 	-cpu $cpu -m $ram -smp $smp -M $machine -nographic $kernel $dtb -append "$cmdline" 2>stderr.log \
 	-drive if=none,id=rootfs,file=$rootfs,format=raw,cache=none -device virtio-blk,drive=rootfs \
 	-netdev type=tap,id=net0 -device virtio-net,netdev=net0 \
+	-fsdev local,id=fsdev0,path=/data/data,security_model=none \
+	-device virtio-9p-pci,fsdev=fsdev0,mount_tag=data \
 	-object acceldev-backend-crypto,id=crypto0 \
 	-object acceldev-backend-generic,id=gen0 \
 	-device virtio-accel-pci,id=accel0,crypto=crypto0,generic=gen0
