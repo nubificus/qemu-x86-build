@@ -11,10 +11,10 @@ docker run --rm --network=host --device=/dev/net/tun --cap-add NET_ADMIN --gpus 
 ```
 
 The above command: 
--adds the tun device to the container and enables setting up a virtual network for the QEMU VM, 
--passes the host kvm device (/dev/kvm) to the container, 
--provides access to the GPU for the container instance and 
--mounts the directory containing the necessary data files for the VM to boot.
+- adds the tun device to the container and enables setting up a virtual network for the QEMU VM, 
+- passes the host kvm device (/dev/kvm) to the container, 
+- provides access to the GPU for the container instance and 
+- mounts the directory containing the necessary data files for the VM to boot.
 
 The entrypoint for the used container image (nubificus/vaccel-qemu) downloads the default ML network models needed for inference in $(DATA_DIR)/networks (using [this script](https://github.com/dusty-nv/jetson-inference/blob/master/tools/download-models.sh)) and starts a QEMU VM with our pre-built kernel & rootfs.img. [This repository](https://github.com/nubificus/qemu-x86-build) contains the dockerfile from which these binaries have been produced. You can download ready-made binaries from the [releases](https://github.com/nubificus/qemu-x86-build/releases/latest) page or our [s3 bucket](https://s3.nbfc.io/nbfc-assets/github/qemu-x86-guest).
 
