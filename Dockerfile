@@ -1,4 +1,4 @@
-FROM nubificus/jetson-inference
+FROM nubificus/jetson-inference:e2e2
 
 # Install common build utilities
 RUN apt-get update && \
