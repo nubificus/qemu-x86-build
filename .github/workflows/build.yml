@@ -71,4 +71,4 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         buildargs: TOKEN=${{ secrets.NBFC_BUILDER_TOKEN }}
-        tags: latest
+        tags: e2e2
