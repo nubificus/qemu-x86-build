@@ -43,8 +43,8 @@ WORKDIR /
 RUN git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/vaccel-runtime.git -b timers-wip
 COPY --from=virtio-builder /virtio-accel /virtio-accel
 WORKDIR /virtio-accel
-RUN USR_CFLAGS="-I/vaccel-runtime" CC=gcc-7 make test-class_op && \
-	cp test-class_op /usr/local/bin/classify
+RUN USR_CFLAGS="-I/vaccel-runtime" CC=gcc-7 make -C examples test-class_op && \
+	cp examples/test-class_op /usr/local/bin/classify
 
 
 FROM scratch as artifacts

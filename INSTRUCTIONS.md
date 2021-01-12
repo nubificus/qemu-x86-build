@@ -18,7 +18,7 @@ After sucessfully starting the container you should get to a login promt. Try ro
 
 To then run an image classification example use:
 ```
-classify <image_path> <iterations>
+classify -f <image_path>
 ```
 
 If (for any reason) you want to try out jetson-inference without booting the QEMU VM, you can just run the container with /bin/bash as an entrypoint, using the following command:
