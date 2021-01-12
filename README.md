@@ -29,7 +29,7 @@ bash run.sh
 
 You can then run an image classification example with:
 ```
-classify <image_path> <iterations>
+classify -f <image_path>
 ```
 
 You can use the `guest/qemu-guest-{arch}/data` directory (created by the `build_guest.sh` script) to share data between the host and the guest at runtime. The directory is mounted at `/root/data` (via 9p) inside the QEMU guest.

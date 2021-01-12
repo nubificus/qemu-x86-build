@@ -26,11 +26,12 @@ RUN git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/vaccel-runt
 	make DISABLE_OPENCL=1 CUDAML_DIR="/usr/local" && \
 	cp libvaccel_runtime.so /usr/local/lib/ && \
 	cp vaccel_runtime.h /usr/local/include && \
+	cp test-class_op /usr/local/bin/classify && \
 	cd .. && rm -rf vaccel-runtime
 	
 # Build & install QEMU w/ vAccel backend
 RUN git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/qemu-vaccel.git \
-	-b update-to-v5 && cd qemu-vaccel && \
+	-b guest-zc && cd qemu-vaccel && \
 	git submodule update --init && \
 	./configure --target-list=x86_64-softmmu --enable-virtfs && \
 	make -j$(nproc) && make install && \
@@ -40,4 +41,5 @@ COPY qemu-ifup /etc/qemu-ifup
 COPY qemu-script.sh /run.sh
 
 VOLUME /data
+WORKDIR /data
 ENTRYPOINT ["/run.sh"]
