@@ -201,8 +201,6 @@ int main(int argc, char** argv)
 	sess.u.gen.out = sess_outargs;
 	sess.u.gen.in = NULL;
 
-	printf("buf = %hhx\n", sess.u.gen.out[0].buf[0]);
-	printf("buf = %hhx\n", sess.u.gen.out[0].buf[5]);
 	if (ioctl(fd, ACCIOC_GEN_SESS_CREATE, &sess)) {
 		perror("ioctl(ACCIOC_GEN_SESS_CREATE)");
 		return 1;

@@ -39,6 +39,6 @@ RUN git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/qemu-vaccel
 	cd .. && rm -rf qemu-vaccel
 
 COPY qemu-ifup /etc/qemu-ifup
-COPY guest/ /guest/
+COPY guest/qemu-guest-x86_64 /data/
 
-##ENTRYPOINT ["/run.sh"]
+ENTRYPOINT ["bash", "/data/qemu_run.sh"]

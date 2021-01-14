@@ -1,0 +1,24 @@
+{
+    "caffe flavor": "NVIDIA",
+    "caffe version": "0.15.14",
+    "creation time": "2017-05-04 19:06:02.923703",
+    "dataset_id": "20170504-185940-f42c",
+    "deploy file": "deploy.prototxt",
+    "digits version": "5.1-dev",
+    "framework": "caffe",
+    "id": "20170504-190602-879f",
+    "image dimensions": [
+        640,
+        640,
+        3
+    ],
+    "job id": "20170504-190602-879f",
+    "mean file": "mean.binaryproto",
+    "model file": "original.prototxt",
+    "name": "DetectNet-COCO-Dog",
+    "snapshot file": "snapshot_iter_38600.caffemodel",
+    "solver file": "solver.prototxt",
+    "status": "Done",
+    "train_val file": "train_val.prototxt",
+    "username": "dusty"
+}

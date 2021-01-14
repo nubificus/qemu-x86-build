@@ -2,8 +2,8 @@
 
 cd /data
 
-mkdir -p networks
-if [[ ! -f networks/.downloaded ]]; then
+if [[ ! -d networks/ ]]; then
+	mkdir -p networks
 	/usr/local/share/jetson-inference/tools/download-models.sh
 	[[ $? -eq 0 ]] && touch networks/.downloaded
 fi
