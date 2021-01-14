@@ -1,7 +1,7 @@
 FROM nubificus/jetson-inference
 
 # Install common build utilities
-RUN apt-get update && \
+RUN mkdir /guest && apt-get update && \
 	DEBIAN_FRONTEND=noninteractive apt-get install -yy eatmydata && \
 	DEBIAN_FRONTEND=noninteractive eatmydata \
 	apt-get install -y --no-install-recommends \
@@ -16,6 +16,7 @@ RUN apt-get update && \
 		iproute2 \
 		libcap-ng-dev \
 		libattr1-dev \
+		genisoimage \
 		$(apt-get -s build-dep qemu | egrep ^Inst | fgrep '[all]' | cut -d\  -f2) \
 	&& rm -rf /var/lib/apt/lists/*
 
@@ -31,15 +32,13 @@ RUN git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/vaccel-runt
 	
 # Build & install QEMU w/ vAccel backend
 RUN git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/qemu-vaccel.git \
-	-b guest-zc && cd qemu-vaccel && \
+	-b legacy_virtio && cd qemu-vaccel && \
 	git submodule update --init && \
 	./configure --target-list=x86_64-softmmu --enable-virtfs && \
 	make -j$(nproc) && make install && \
 	cd .. && rm -rf qemu-vaccel
 
 COPY qemu-ifup /etc/qemu-ifup
-COPY qemu-script.sh /run.sh
+COPY guest/ /guest/
 
-VOLUME /data
-WORKDIR /data
-ENTRYPOINT ["/run.sh"]
+##ENTRYPOINT ["/run.sh"]
