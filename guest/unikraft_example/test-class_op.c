@@ -18,6 +18,7 @@
  */
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -25,10 +26,10 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <signal.h>
+//#include <signal.h>
 #include <time.h>
-#include <math.h>
-#include <arpa/inet.h>
+//#include <math.h>
+//#include <arpa/inet.h>
 
 #include "accel.h"
 #include "virtio_accel.h"
@@ -50,10 +51,10 @@ static double udifftimeval1(struct timespec start, struct timespec end)
 
 static volatile int must_finish;
 
-static void alarm_handler(int signo)
-{
-        must_finish = 1;
-}
+//static void alarm_handler(int signo)
+//{
+//        must_finish = 1;
+//}
 
 static char *units[] = { "", "Ki", "Mi", "Gi", "Ti", 0};
 static char *si_units[] = { "", "K", "M", "G", "T", 0};
@@ -82,18 +83,19 @@ static void value2human(int si, double bytes, double time, double* data,
 	}
 }
 
-#define MAX(x,y) ((x)>(y)?(x):(y))
+//#define MAX(x,y) ((x)>(y)?(x):(y))
 
 int process_data(struct accel_session *sess, int fdc, int image_len, char *image, int iterations)
 {
 	struct accel_op op;
 	struct vaccelrt_hdr sess_hdr;
 	struct accel_gen_op_arg op_args[4];
-	static int val = 23;
+	//static int val = 23;
 	int tt = 0, ret;
 	struct timeval start, end;
 	struct timespec start1, end1;
-	double total = 0, ttotal = 0, cltotal = 0, op_time[10];
+	//double total = 0, ttotal = 0, cltotal = 0, op_time[10];
+	double total = 0, ttotal = 0, op_time[10];
 	double secs, ddata, dspeed;
 	char metric[16];
 	char out_text[512], out_imgname[512];
@@ -106,7 +108,7 @@ int process_data(struct accel_session *sess, int fdc, int image_len, char *image
 		memset(&sess_hdr, 0, sizeof(sess_hdr));
 		op.session_id = sess->id;
 		op_args[0].len = sizeof(sess_hdr);
-		op_args[0].buf = &sess_hdr;
+		op_args[0].buf = (uint8_t *) &sess_hdr;
 		op_args[1].len = image_len;
 		op_args[1].buf = (unsigned char *)image;
 		op_args[2].len = sizeof(out_text);
@@ -119,9 +121,10 @@ int process_data(struct accel_session *sess, int fdc, int image_len, char *image
 		op.u.gen.out = &op_args[0];
 
 	clock_gettime(CLOCK_MONOTONIC, &start1);
-		if (ret = ioctl(fdc, ACCIOC_GEN_DO_OP, &op)) {
-			perror("ioctl(ACCIOC_GEN_DO_OP)");
-			printf("Unikraft App: %d\n", ret);
+		ret = ioctl(fdc, ACCIOC_GEN_DO_OP, &op);
+		if (ret) {
+			//perror("ioctl(ACCIOC_GEN_DO_OP)");
+			fprintf(stderr, "Unikraft App: %d\n", ret);
 			return 1;
 		}
 
@@ -132,8 +135,8 @@ int process_data(struct accel_session *sess, int fdc, int image_len, char *image
 	ttotal += op_time[tt];
 	tt++;
 
-	//	total+=image_len;
-	//	cltotal+=sess->ocl_ctx.op_time;
+		//total+=image_len;
+		//cltotal+=sess->ocl_ctx.op_time;
 		if (tt == iterations) {
 			must_finish=1;
 		}
@@ -147,11 +150,11 @@ int process_data(struct accel_session *sess, int fdc, int image_len, char *image
 		printf("Unikraft App: \top[%d]: %.6f ms\n", i, op_time[i] / 1000000.0);
 	printf("\nUnikraft App: \titerations: %d\nUnikraft App: \top: %.6f ms\n", \
 			iterations, ttotal / (tt * 1000000.0));
-	//printf("\topencl op: %.6f ms, %d, %.6f s\n", cltotal / tt,
+	//printf("Unikraft APP:\topencl op: %.6f ms, %d, %.6f s\n", cltotal / tt,
 	//		tt, cltotal / 1000.0);
 	printf ("Unikraft App: \ttotal: %.6f secs\n", secs);
-	//printf ("\tdone. %.2f %s in %.2f secs: ", ddata, metric, secs);
-	//printf ("%.2f %s/sec\n", dspeed, metric);
+	//printf ("Unikraft APP:\tdone. %.2f %s in %.2f secs: ", ddata, metric, secs);
+	//printf ("Unikraft APP:%.2f %s/sec\n", dspeed, metric);
 
 	return 0;
 }
@@ -163,17 +166,17 @@ int main(int argc, char** argv)
 	struct vaccelrt_hdr sess_hdr;
 	struct accel_gen_op_arg sess_outargs[2];
 	char *filename = "example.jpg";
-	const char *mode = "rb";
+	//const char *mode = "rb";
 	char *image = NULL;
 	struct stat buf;
 	off_t fsize;
 
-	signal(SIGALRM, alarm_handler);
+	//signal(SIGALRM, alarm_handler);
 	
 	if (argc > 1) {
 		if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
 			printf("Unikraft App: Usage: speed [--kib] [<image>]\n");
-			exit(0);
+			return 0;
 		}
 		if (strcmp(argv[1], "--kib") == 0) {
 			si = 0;
@@ -185,15 +188,15 @@ int main(int argc, char** argv)
 	}
 	
 	if ((fd = open("/dev/vaccel", O_RDWR, 0)) < 0) {
-		perror("open()");
-		printf("Unikraft App: ton xristo sou 3\n");
+		//perror("open()");
+		fprintf(stderr, "Unikraft App: Failed to open /dev/vaccel %d\n", fd);
 		return 1;
 	}
 	printf("Unikraft App: opening file %s\n", filename);
 
 	fprintf(stderr, "\nUnikraft App: Testing:\n");
 	sess_hdr.type = VACCELRT_SESS_CLASSIFY;
-	sess_outargs[0].buf = &sess_hdr;
+	sess_outargs[0].buf = (uint8_t *) &sess_hdr;
 	sess_outargs[0].len = sizeof(struct vaccelrt_hdr);
 
 	memset(&sess, 0, sizeof(sess));
@@ -202,14 +205,17 @@ int main(int argc, char** argv)
 	sess.u.gen.out = sess_outargs;
 	sess.u.gen.in = NULL;
 
-	if (ioctl(fd, ACCIOC_GEN_SESS_CREATE, &sess)) {
-		perror("ioctl(ACCIOC_GEN_SESS_CREATE)");
+	ret = ioctl(fd, ACCIOC_GEN_SESS_CREATE, &sess);
+	if (ret) {
+		//perror("ioctl(ACCIOC_GEN_SESS_CREATE)");
+		fprintf(stderr, "Error when creating session: %d\n", ret);
 		return 1;
 	}
 	
 	ffd = open(filename, O_RDONLY);
 	if (ffd < 0) {
-		perror("open: ");
+		//perror("open: ");
+		fprintf(stderr, "Error opening %s: %d", filename, ffd);
 		goto out;
 	}
 	fstat(ffd, &buf);
@@ -228,8 +234,10 @@ int main(int argc, char** argv)
 	process_data(&sess, fd, i, image, iterations);
 
 out:
-	if (ioctl(fd, ACCIOC_GEN_SESS_DESTROY, &sess)) {
-		perror("ioctl(ACCIOC_GEN_SESS_DESTROY)");
+	ret = ioctl(fd, ACCIOC_GEN_SESS_DESTROY, &sess);
+	if (ret) {
+		//perror("ioctl(ACCIOC_GEN_SESS_DESTROY)");
+		fprintf(stderr, "Error when destroying session: %d\n", ret);
 		return 1;
 	}
 	
