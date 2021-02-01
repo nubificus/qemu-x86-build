@@ -9,14 +9,13 @@ COPY . /guest/
 
 # build unikraft
 ARG TOKEN
-RUN mkdir -p unikraft/libs unikraft/apps && cd unikraft/libs && \
-	git clone https://github.com/unikraft/lib-newlib.git && \
-	git clone https://github.com/unikraft/lib-lwip.git && \
+RUN mkdir -p unikraft/libs unikraft/apps && \
 	cd /unikraft && \
-	git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/unikraft.git && \
+	git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/unikraft.git \
+	-b vaccel_new && \
         mv /guest/unikraft_example/ apps/classify && \
         cd apps/classify && \
-        cp config .config && \
+        cp vaccel_config .config && \
         make
 
 FROM scratch as artifacts
