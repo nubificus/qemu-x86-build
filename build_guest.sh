@@ -36,6 +36,5 @@ fi
 cd guest
 
 DOCKER_BUILDKIT=1 docker build --network=host -f Dockerfile_${unikernel}.x86_64 -t nubificus/vaccel-qemu_${unikernel} --build-arg "TOKEN=$TOKEN" --target artifacts --output type=local,dest=./qemu-guest-x86_64 .
-##DOCKER_BUILDKIT=1 docker build --network=host -f Dockerfile_${unikernel}.x86_64 -t nubificus/vaccel-qemu_${unikernel} --build-arg "TOKEN=$TOKEN" .
 
 cp -r data networks ${unikernel}_example/qemu_run.sh ./qemu-guest-x86_64
