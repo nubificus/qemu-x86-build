@@ -8,11 +8,9 @@ RUN apt-get update && apt-get install -y build-essential git \
 COPY . /guest/
 
 # build unikraft
-ARG TOKEN
 RUN mkdir -p unikraft/libs unikraft/apps && \
 	cd unikraft && \
-	git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/unikraft.git \
-	-b vaccel_new && \
+	git clone https://github.com/cloudkernels/unikraft.git -b vaccel && \
 	cd apps && \
 	git clone https://github.com/cloudkernels/unikraft_app_classify.git && \
         cd unikraft_app_classify && cp vaccel_config .config && \
