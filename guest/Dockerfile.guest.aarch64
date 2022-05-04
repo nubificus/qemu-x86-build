@@ -1,0 +1,81 @@
+FROM debian:latest as linux-builder
+
+# install prerequisites
+RUN apt-get update && apt-get install -y build-essential git \
+	libz-dev bin86 bison flex wget bc libelf-dev libssl-dev \
+	init udev kmod && apt-get clean
+RUN git clone https://github.com/torvalds/linux -b v5.14 --depth 1
+
+# build linux kernel
+WORKDIR /linux
+COPY vm.config arch/x86/configs/vm.config
+RUN touch .config && make vm.config && make vmlinux -j$(nproc) bzImage
+RUN make modules modules_install INSTALL_MOD_PATH=/modules
+
+FROM linux-builder as virtio-builder
+# get virtio-accel source
+ARG TOKEN
+WORKDIR /
+RUN git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/virtio-accel
+
+# build virtio-accel
+WORKDIR /virtio-accel
+RUN make modules modules_install KDIR=/linux INSTALL_MOD_PATH=/modules
+
+FROM ubuntu:latest as rootfs-builder
+COPY --from=virtio-builder /modules/* /lib/
+RUN apt-get update && apt-get -y install init udev kmod \
+	isc-dhcp-client ifupdown iproute2 iputils-ping gcc-7 strace vim socat net-tools && \
+	apt-get clean
+RUN apt-get update && apt-get install -y build-essential git cmake cargo libclang-dev && \
+	apt-get clean
+RUN sed s/root\:x\:/root\:\:/ -i /etc/passwd && \
+	sed s/root\:\*\:/root\:\:/ -i /etc/shadow && \
+	mkdir /root/data && \
+	echo "data  /root/data  9p  trans=virtio,posixacl,_netdev  0  0" > /etc/fstab
+COPY interfaces.d /etc/network/interfaces.d
+RUN echo "virtio_accel" > /lib/modules-load.d/virtio_accel.conf
+
+# build vaccelrt
+FROM rootfs-builder as vaccelrt-builder
+ARG TOKEN
+#RUN apt-get update && apt-get install -y build-essential git cmake cargo libclang-dev && \
+#	apt-get clean
+
+WORKDIR /
+COPY --from=virtio-builder /virtio-accel /virtio-accel
+RUN git clone \
+	https://${TOKEN}:x-oauth-basic@github.com/nubificus/vaccelrt-plugin-virtio &&  \
+	cd vaccelrt-plugin-virtio && git submodule update --init && \
+	cd vaccelrt && git submodule update --init && cd .. && \
+	rm -rf virtio-accel && mv /virtio-accel ./ && \
+	mkdir build && cd build && \
+	cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && make install && \
+	cd ../.. && rm -rf vaccelrt*
+
+RUN git clone -b feat_exec \
+	https://${TOKEN}:x-oauth-basic@github.com/nubificus/vaccelrt-plugin-vsock && \
+	cd vaccelrt-plugin-vsock && git submodule init && \
+	git config submodule.vaccel-client.url https://${TOKEN}:x-oauth-basic@github.com/nubificus/vaccel-client.git && \
+	git submodule update && \
+	cd vaccelrt && git submodule update --init && \
+	mkdir build && cd build && \
+	cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_EXAMPLES=ON .. && \
+	make install && cd ../.. && mkdir build && cd build && \
+	cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && make install && \
+	cd ../.. && rm -rf vaccelrt*
+
+RUN echo "export VACCEL_BACKENDS=/usr/local/lib/libvaccel-virtio.so" >> /root/.bashrc && \
+	echo "/usr/local/lib" >> /etc/ld.so.conf.d/vaccel.conf && \
+	echo "/sbin/ldconfig" >> /root/.bashrc
+
+FROM scratch as artifacts
+COPY /create_rootfs.sh /
+COPY --from=linux-builder /linux/arch/x86/boot/bzImage /
+COPY --from=linux-builder /linux/vmlinux /
+COPY --from=rootfs-builder / /rootfs
+COPY --from=rootfs-builder /root/data /data
+COPY /dog_0.jpg	/data/
+COPY --from=vaccelrt-builder /usr/local /rootfs/usr/local
+COPY --from=vaccelrt-builder /root/.bashrc /rootfs/root/.bashrc
+COPY --from=vaccelrt-builder /etc/ld.so.conf.d/vaccel.conf /rootfs/etc/ld.so.conf.d/vaccel.conf
