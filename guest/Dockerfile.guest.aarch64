@@ -25,7 +25,7 @@ RUN make modules modules_install KDIR=/linux INSTALL_MOD_PATH=/modules
 FROM ubuntu:latest as rootfs-builder
 COPY --from=virtio-builder /modules/* /lib/
 RUN apt-get update && apt-get -y install init udev kmod \
-	isc-dhcp-client ifupdown iproute2 iputils-ping gcc-7 strace vim socat net-tools && \
+	isc-dhcp-client ifupdown iproute2 iputils-ping gcc strace vim socat net-tools && \
 	apt-get clean
 RUN apt-get update && apt-get install -y build-essential git cmake cargo libclang-dev && \
 	apt-get clean
@@ -53,7 +53,7 @@ RUN git clone \
 	cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && make install && \
 	cd ../.. && rm -rf vaccelrt*
 
-RUN git clone -b feat_exec \
+RUN git clone \
 	https://${TOKEN}:x-oauth-basic@github.com/nubificus/vaccelrt-plugin-vsock && \
 	cd vaccelrt-plugin-vsock && git submodule init && \
 	git config submodule.vaccel-client.url https://${TOKEN}:x-oauth-basic@github.com/nubificus/vaccel-client.git && \

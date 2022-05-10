@@ -10,11 +10,11 @@ smp=1
 cpu=host
 ram=512
 
-machine="virt,accel=kvm"
-kernel="-kernel Image"
+machine="pc,accel=kvm"
+kernel="-kernel bzImage"
 dtb=""
 rootfs=rootfs.img
-cmdline="rw root=/dev/vda "
+cmdline="rw root=/dev/vda console=ttyS0"
 stderr=run/stderr.log
 extra_args=
 cid=
@@ -82,7 +82,7 @@ fsck.ext4 -fy $rootfs 1>/dev/null 2>&1
 
 [[ -z "${cid}" ]] || vaccelrt-agent -a "vsock://${cid}:2048" &
 
-TERM=linux qemu-system-aarch64 \
+TERM=linux qemu-system-x86_64\
 	-cpu $cpu -m $ram -smp $smp -M $machine -nographic $kernel $dtb -append "$cmdline" 2>stderr.log \
 	-drive if=none,id=rootfs,file=$rootfs,format=raw,cache=none -device virtio-blk,drive=rootfs \
 	-fsdev local,id=fsdev0,path=/data/data,security_model=none \

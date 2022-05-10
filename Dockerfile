@@ -1,7 +1,7 @@
-FROM nubificus/jetson-inference
+FROM nubificus/jetson-inference:x86_64
 
 # Install common build utilities
-RUN apt-get update && \
+RUN apt-get --allow-releaseinfo-change update && \
 	DEBIAN_FRONTEND=noninteractive apt-get install -yy eatmydata && \
 	DEBIAN_FRONTEND=noninteractive eatmydata \
 	apt-get install -y --no-install-recommends \
