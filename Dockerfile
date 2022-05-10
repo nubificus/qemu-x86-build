@@ -1,4 +1,12 @@
-FROM nubificus/jetson-inference
+#FROM nubificus/jetson-inference
+
+FROM xilinx/xilinx_runtime_base:alveo-2021.1-ubuntu-18.04
+#COPY krnl_SAVGOL  /workspace/krnl_SAVGOL
+#COPY krnl_SAVGOL.xclbin /workspace/krnl_SAVGOL.xclbin
+#COPY entrypoint.sh /etc/entrypoint.sh
+
+#ENTRYPOINT ["/etc/entrypoint.sh"]
+#CMD ["source /opt/xilinx/xrt/setup.sh"]
 
 # Install common build utilities
 RUN apt-get update && \
@@ -25,6 +33,15 @@ RUN apt-get update && \
 		freeglut3-dev \
 	&& rm -rf /var/lib/apt/lists/*
 
+# Install git
+RUN apt-get update && \
+	DEBIAN_FRONTEND=noninteractive apt-get install -yy eatmydata && \
+	DEBIAN_FRONTEND=noninteractive eatmydata \
+	apt-get install -y --no-install-recommends \
+		git cmake
+#\
+	#&& rm -rf /var/lib/apt/lists/*
+
 ARG TOKEN
 # Build & install vaccelrt
 RUN git clone \
@@ -38,15 +55,6 @@ RUN git clone \
 	echo "/sbin/ldconfig" >> /root/.bashrc && \
 	mkdir /run/user && \
 	cd ../.. && rm -rf vaccelrt
-
-# Build & install vaccelrt jetson inference plugin
-RUN git clone \
-	https://${TOKEN}:x-oauth-basic@github.com/nubificus/vaccelrt-plugin-jetson && \
-	cd vaccelrt-plugin-jetson && git submodule update --init && \
-	cd vaccelrt && git submodule update --init && \
-	cd .. && mkdir build && cd build && \
-	cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && make install && \
-	cd ../.. && rm -rf vaccelrt-plugin-jetson
 
 # Build & install QEMU w/ vAccel backend
 COPY vq-size.patch /
