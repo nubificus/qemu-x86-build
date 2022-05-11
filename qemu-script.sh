@@ -10,18 +10,18 @@ smp=1
 cpu=host
 ram=512
 
-machine="virt,accel=kvm"
-kernel="-kernel Image"
+machine="pc,accel=kvm"
+kernel="-kernel bzImage"
 dtb=""
 rootfs=rootfs.img
-cmdline="rw root=/dev/vda "
+cmdline="rw root=/dev/vda console=ttyS0 "
 stderr=run/stderr.log
 extra_args=
 cid=
 
 cd /data
 mkdir -p run
-while getopts 'c:m:r:a:s:v:n' opt; do
+while getopts 'c:m:r:a:s:v:n:' opt; do
 	case $opt in
 		c)
 			# VM vCPUs
@@ -53,6 +53,7 @@ while getopts 'c:m:r:a:s:v:n' opt; do
 			;;
 		n)
 			# VM w/ network
+			[[ -z "${OPTARG}" ]] && mac="52:54:00:12:34:01" || mac="${OPTARG}"
 			extra_args+="-netdev type=tap,id=net0 -device virtio-net,netdev=net0 "
 			;;
 		v)
@@ -82,7 +83,7 @@ fsck.ext4 -fy $rootfs 1>/dev/null 2>&1
 
 [[ -z "${cid}" ]] || vaccelrt-agent -a "vsock://${cid}:2048" &
 
-TERM=linux qemu-system-aarch64 \
+TERM=linux qemu-system-x86_64 \
 	-cpu $cpu -m $ram -smp $smp -M $machine -nographic $kernel $dtb -append "$cmdline" 2>stderr.log \
 	-drive if=none,id=rootfs,file=$rootfs,format=raw,cache=none -device virtio-blk,drive=rootfs \
 	-fsdev local,id=fsdev0,path=/data/data,security_model=none \
