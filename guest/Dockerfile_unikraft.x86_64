@@ -1,11 +1,16 @@
-FROM debian:latest as builder
+##FROM debian:stable as builder
+FROM nubificus/jetson-inference as builder
+##FROM nubificus/jetson-inference
 
 # install prerequisites
-RUN apt-get update && apt-get install -y build-essential git \
+RUN sed -i '/developer\.download\.nvidia\.com\/compute\/cuda\/repos/d' /etc/apt/sources.list.d/* && \
+	sed -i '/developer\.download\.nvidia\.com\/compute\/machine-learning\/repos/d' /etc/apt/sources.list.d/* && \
+	apt-key del 7fa2af80 && cd /tmp && \
+	wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.0-1_all.deb && \
+	dpkg -i cuda-keyring_1.0-1_all.deb && \
+	apt-get update && apt-get install -y build-essential git \
 	libz-dev bin86 bison flex wget bc libelf-dev libssl-dev \
 	init udev kmod unzip python3 && apt-get clean
-
-COPY . /guest/
 
 # build unikraft
 RUN mkdir -p unikraft/libs unikraft/apps && \

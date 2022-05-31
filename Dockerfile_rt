@@ -1,7 +1,12 @@
 FROM nubificus/jetson-inference
 
 # Install common build utilities
-RUN mkdir /guest && apt-get update && \
+RUN sed -i '/developer\.download\.nvidia\.com\/compute\/cuda\/repos/d' /etc/apt/sources.list.d/* && \
+	sed -i '/developer\.download\.nvidia\.com\/compute\/machine-learning\/repos/d' /etc/apt/sources.list.d/* && \
+	apt-key del 7fa2af80 && cd /tmp && \
+	wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.0-1_all.deb && \
+	dpkg -i cuda-keyring_1.0-1_all.deb && \
+	mkdir /guest && apt-get update && \
 	DEBIAN_FRONTEND=noninteractive apt-get install -yy eatmydata && \
 	DEBIAN_FRONTEND=noninteractive eatmydata \
 	apt-get install -y --no-install-recommends \
@@ -18,12 +23,14 @@ RUN mkdir /guest && apt-get update && \
 		libattr1-dev \
 		genisoimage \
 		unzip \
+		apt-transport-https ca-certificates \
 		$(apt-get -s build-dep qemu | egrep ^Inst | fgrep '[all]' | cut -d\  -f2) \
-	&& rm -rf /var/lib/apt/lists/*
+	&& rm -rf /var/lib/apt/lists/* && update-ca-certificates
 
 # Build & install vaccelrti
 RUN git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/vaccelrt && \
-	cd vaccelrt && git submodule update --init && mkdir build && cd build && \
+	cd vaccelrt && git checkout 5c3b9adf072965b3c8c5657e939fad18707f883d && \
+	git submodule update --init && mkdir build && cd build && \
 	cmake -DCMAKE_INSTALL_PREFIX=/.local -DBUILD_PLUGIN_JETSON=ON .. && \
 	make && make install && \
 	cd ../..
@@ -41,4 +48,3 @@ RUN mkdir -p /usr/local/share/imagenet-models/ && cd /usr/local/share/imagenet-m
 	tar xjf networks.tar.bz2 && \
 	cp /usr/local/share/jetson-inference/data/networks/* /usr/local/share/imagenet-models/networks && \
 	cd /
-
