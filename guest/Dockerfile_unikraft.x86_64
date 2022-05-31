@@ -12,13 +12,22 @@ RUN sed -i '/developer\.download\.nvidia\.com\/compute\/cuda\/repos/d' /etc/apt/
 	libz-dev bin86 bison flex wget bc libelf-dev libssl-dev \
 	init udev kmod unzip python3 && apt-get clean
 
+ARG TOKEN
+
 # build unikraft
 RUN mkdir -p unikraft/libs unikraft/apps && \
 	cd unikraft && \
-	git clone https://github.com/cloudkernels/unikraft.git -b vaccel && \
-	cd apps && \
-	git clone https://github.com/cloudkernels/unikraft_app_classify.git && \
-        cd unikraft_app_classify && cp vaccel_config .config && \
+	git clone https://github.com/cloudkernels/unikraft.git -b watchdog_vaccel && \
+	cd libs && \
+	git clone https://github.com/unikraft/lib-newlib.git -b RELEASE-0.4 && \
+	git clone https://github.com/unikraft/lib-lwip.git -b RELEASE-0.4 && \
+	git clone https://github.com/unikraft/lib-http-parser.git && \
+	git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/lib-watchdog.git -b expect_cont && \
+	cd lib-lwip && \
+	patch -p1 < ../lib-watchdog/0001-Get-command-line-arguments-for-ipv4-config.patch && \
+	cd ../../apps && \
+	git clone https://github.com/cloudkernels/unikraft_app_classify.git -b watchdog && \
+        cd unikraft_app_classify && cp watchdog_config .config && \
         make
 
 FROM scratch as artifacts
