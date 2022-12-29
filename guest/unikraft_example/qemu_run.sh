@@ -3,7 +3,7 @@
 cd /data
 
 ##export VACCEL_IMAGENET_NETWORKS=/data/networks
-export VACCEL_BACKENDS=/.local/lib/libvaccel-jetson.so
+export VACCEL_BACKENDS=/usr/local/lib/libvaccel-jetson.so
 
 IMAGE=$1
 ITER=$2
