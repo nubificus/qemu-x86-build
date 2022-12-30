@@ -15,9 +15,9 @@ RUN sed -i '/developer\.download\.nvidia\.com\/compute\/cuda\/repos/d' /etc/apt/
 # build unikraft
 RUN mkdir -p unikraft/libs unikraft/apps && \
 	cd unikraft && \
-	git clone https://github.com/cloudkernels/unikraft.git -b vaccelrt && \
+	git clone https://github.com/cloudkernels/unikraft.git -b vaccelrt_rel011 && \
 	cd apps && \
-	git clone https://github.com/cloudkernels/unikraft_app_classify.git && \
+	git clone https://github.com/cloudkernels/unikraft_app_classify.git -b vaccelrt && \
         cd unikraft_app_classify && cp vaccel_config .config && \
         make
 
