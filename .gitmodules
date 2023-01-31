@@ -1,0 +1,3 @@
+[submodule "guest/unikraft_example"]
+	path = guest/unikraft_example
+	url = https://github.com/cloudkernels/unikraft_vaccel_examples.git
