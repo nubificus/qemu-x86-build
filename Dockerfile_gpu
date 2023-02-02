@@ -1,4 +1,4 @@
-FROM nubificus/jetson-inference
+FROM nubificus/jetson-inference-updated:x86_64
 
 # Install common build utilities
 RUN sed -i '/developer\.download\.nvidia\.com\/compute\/cuda\/repos/d' /etc/apt/sources.list.d/* && \
@@ -27,18 +27,17 @@ RUN sed -i '/developer\.download\.nvidia\.com\/compute\/cuda\/repos/d' /etc/apt/
 		$(apt-get -s build-dep qemu | egrep ^Inst | fgrep '[all]' | cut -d\  -f2) \
 	&& rm -rf /var/lib/apt/lists/* && update-ca-certificates
 
-# Build & install vaccelrti
-RUN git clone https://${TOKEN}:x-oauth-basic@github.com/cloudkernels/vaccelrt && \
-	cd vaccelrt && \
-	git submodule update --init && mkdir build && cd build && \
-	cmake -DCMAKE_INSTALL_PREFIX=/.local -DBUILD_PLUGIN_JETSON=ON .. && \
-	make && make install && \
-	cd ../..
-	
+# Get & install vaccelrti
+RUN wget -q https://s3.nbfc.io/nbfc-assets/github/vaccelrt/master/x86_64/Release-deb/vaccel-0.5.0-Linux.deb && dpkg -i vaccel-0.5.0-Linux.deb
+
 # Install Jetson vaccel plugin
-RUN wget https://s3.nbfc.io/nbfc-assets/github/vaccelrt/plugins/jetson_inference/master/x86_64/vaccelrt-plugin-jetson-0.1-Linux.deb && \
-	dpkg -i vaccelrt-plugin-jetson-0.1-Linux.deb && \
-	rm vaccelrt-plugin-jetson-0.1-Linux.deb
+RUN wget -q https://s3.nbfc.io/nbfc-assets/github/jetson-plugin/dc6c14f32d96863292e659b1338a7244d15b5504/x86_64/Release/libvaccel-jetson.so -O /usr/local/lib/libvaccel-jetson.so
+
+RUN mkdir -p /usr/local/share/imagenet-models/ && cd /usr/local/share/imagenet-models/ && \
+	wget https://s3.nbfc.io/nbfc-assets/github/vaccelrt/plugins/jetson_inference/networks.tar.gz -q -O - | \
+	tar -zxvf - -C /usr/local/share/imagenet-models --strip-components=3
+
+ENV VACCEL_IMAGENET_NETWORKS=/usr/local/share/imagenet-models/networks
 
 # Build & install QEMU w/ vAccel backend
 RUN git clone https://github.com/cloudkernels/qemu-vaccel.git \
@@ -47,9 +46,3 @@ RUN git clone https://github.com/cloudkernels/qemu-vaccel.git \
 	./configure --extra-cflags="-I /.local/include -Wno-strict-prototypes" --extra-ldflags="-L/.local/lib" --target-list=x86_64-softmmu --enable-virtfs && \
 	make -j$(nproc) && make install && \
 	cd .. && rm -rf qemu-vaccel
-
-RUN mkdir -p /usr/local/share/imagenet-models/ && cd /usr/local/share/imagenet-models/ && \
-	wget https://github.com/nubificus/qemu-x86-build/releases/download/v0.01/networks.tar.bz2 && \
-	tar xjf networks.tar.bz2 && \
-	cp /usr/local/share/jetson-inference/data/networks/* /usr/local/share/imagenet-models/networks && \
-	cd /

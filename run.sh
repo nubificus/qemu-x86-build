@@ -1,4 +1,3 @@
 #!/bin/bash
 
-##docker run --rm --network=host --device=/dev/net/tun --cap-add NET_ADMIN --gpus all -v $(pwd)/guest/qemu-rumprun-x86_64:/data -it --device=/dev/kvm nubificus/unikernels_vaccel-qemu
-docker run --rm --network=host --device=/dev/net/tun --cap-add NET_ADMIN --gpus all -v $(pwd)/guest/qemu-guest-x86_64:/data -it --device=/dev/kvm nubificus/unikernels_vaccel-qemu bash /data/qemu_run.sh $1 $2
+docker run --rm --gpus all -v $(pwd)/guest/qemu-guest-x86_64:/data -it --device=/dev/kvm nubificus/unikernels_vaccel_gpu bash /data/qemu_run.sh /data/data/ data/unikraft_vaccel_$1_kvm-x86_64
