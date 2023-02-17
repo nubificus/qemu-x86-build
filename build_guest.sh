@@ -49,8 +49,8 @@ elif [[ "$unikernel" == "unikraft" ]]; then
 	fi
 	pushd guest/
 	pushd unikraft_example
-	sudo DOCKER_BUILDKIT=1 docker build --network=host -f Dockerfile -t unikraft_vaccel_example --build-arg "EXAMPLE=$example" --target artifacts --output type=local,dest=../qemu-guest-x86-64 .
+	sudo DOCKER_BUILDKIT=1 docker build --network=host -f Dockerfile -t unikraft_vaccel_example --build-arg "EXAMPLE=$example" --target artifacts --output type=local,dest=../qemu-guest-x86_64 .
 	popd
-	sudo cp -r data unikraft_example/qemu_run.sh ./qemu-guest-x86-64
+	sudo cp -r data unikraft_example/qemu_run.sh ./qemu-guest-x86_64
 	popd
 fi

@@ -30,6 +30,12 @@ RUN sed -i '/developer\.download\.nvidia\.com\/compute\/cuda\/repos/d' /etc/apt/
 # Get & install vaccelrti
 RUN wget -q https://s3.nbfc.io/nbfc-assets/github/vaccelrt/master/x86_64/Release-deb/vaccel-0.5.0-Linux.deb && dpkg -i vaccel-0.5.0-Linux.deb
 
+# Get & install blas plugin for GPU
+RUN wget -q https://s3.nbfc.io/nbfc-assets/github/vaccelrt/plugins/serrano-gpu/main/x86_64/Release-deb/vaccelrt-plugin-serrano-gpu-0.1.1-Linux.deb && dpkg -i vaccelrt-plugin-serrano-gpu-0.1.1-Linux.deb && mv /usr/local/lib/libvaccel-serrano-gpu.so /usr/local/lib/libvaccel-blasgpu.so
+
+# Get & install blas plugin for CPU
+RUN wget -q https://s3.nbfc.io/nbfc-assets/github/vaccelrt/plugins/serrano-cpu/main/x86_64/Release-deb/vaccelrt-plugin-serrano-cpu-0.1.1-Linux.deb && dpkg -i vaccelrt-plugin-serrano-cpu-0.1.1-Linux.deb && mv /usr/local/lib/libvaccel-serrano-cpu.so /usr/local/lib/libvaccel-blascpu.so
+
 # Install Jetson vaccel plugin
 RUN wget -q https://s3.nbfc.io/nbfc-assets/github/jetson-plugin/dc6c14f32d96863292e659b1338a7244d15b5504/x86_64/Release/libvaccel-jetson.so -O /usr/local/lib/libvaccel-jetson.so
 
